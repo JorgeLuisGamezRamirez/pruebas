@@ -195,12 +195,15 @@ class PanelIPC(QWidget):
 
     def _iniciar_demo(self):
         self.consola_ipc.clear()
+        self.consola_ipc.append("Iniciando proceso robotizado...")
         cap = self.spin_cap.value()
         items = self.spin_items.value()
         self._crear_slots_vacios(cap)
 
         self.btn_iniciar.setEnabled(False)
         self.btn_detener.setEnabled(True)
+        self.spin_cap.setEnabled(False)
+        self.spin_items.setEnabled(False)
 
         self.worker_ipc = WorkerIPC(cap, items)
         self.worker_ipc.senal_evento.connect(self._on_evento)
@@ -213,6 +216,8 @@ class PanelIPC(QWidget):
             self.worker_ipc.wait(2000)
         self.btn_iniciar.setEnabled(True)
         self.btn_detener.setEnabled(False)
+        self.spin_cap.setEnabled(True)
+        self.spin_items.setEnabled(True)
 
     def _on_evento(self, mensaje: str, estado_bufer: list):
         self.consola_ipc.append(mensaje)
@@ -255,6 +260,8 @@ class PanelIPC(QWidget):
         self.consola_ipc.append("\n✓ Demo IPC completada exitosamente.")
         self.btn_iniciar.setEnabled(True)
         self.btn_detener.setEnabled(False)
+        self.spin_cap.setEnabled(True)
+        self.spin_items.setEnabled(True)
 
     def detener_si_corriendo(self):
         """Detiene el worker si está activo (para cleanup al cerrar)."""

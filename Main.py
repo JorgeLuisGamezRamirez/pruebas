@@ -23,5 +23,5 @@ if __name__ == '__main__':
     ventana = VentanaPrincipal()
     ventana.showMaximized()
 
-    # 5. Entregamos el control al bucle de eventos de PyQt6
+    # 5. Entregamos el control al bucle de eventos de PyQt6 
     sys.exit(app.exec())

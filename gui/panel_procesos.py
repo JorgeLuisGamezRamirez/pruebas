@@ -6,7 +6,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QColor
 from nucleo.proceso import EstadoProceso
 from gui import estilos
-from gui.dialogo_proceso import DialogoProceso
 
 
 class PanelProcesos(QWidget):
@@ -29,12 +28,6 @@ class PanelProcesos(QWidget):
         header.addWidget(lbl)
         header.addStretch()
 
-        btn_nuevo = QPushButton("+  Nuevo Proceso")
-        btn_nuevo.setObjectName("btn_secundario")
-        btn_nuevo.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_nuevo.clicked.connect(self._abrir_dialogo_crear)
-        header.addWidget(btn_nuevo)
-
         layout.addLayout(header)
 
         # Tabla
@@ -52,12 +45,6 @@ class PanelProcesos(QWidget):
         self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tabla.setShowGrid(False)
         layout.addWidget(self.tabla)
-
-    def _abrir_dialogo_crear(self):
-        dialogo = DialogoProceso(self)
-        if dialogo.exec():
-            r = dialogo.resultado
-            self.simulador.crear_proceso(r['nombre'], r['prioridad'], r['rafaga_cpu'], r['mem_mb'])
 
     def actualizar(self, estado: dict):
         """Recibe el estado completo y repinta la tabla."""

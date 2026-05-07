@@ -74,6 +74,8 @@ class VentanaPrincipal(QMainWindow):
         estado_inicial = self.simulador.obtener_estado()
         self._on_tick(estado_inicial)
 
+        self._on_ejecutar()
+
     def _crear_planificador(self, idx: int, quantum: int):
         if idx == 0:
             return PlanificadorFCFS()
@@ -270,6 +272,18 @@ class VentanaPrincipal(QMainWindow):
         self.panel_cpu.actualizar(estado)
         self.panel_gantt.actualizar(estado)
         self.panel_registros.actualizar(estado)
+
+        terminados = estado.get('terminados', [])
+        todos = estado.get('todos', [])
+        if len(todos) > 0 and len(terminados) == len(todos):
+            if self.worker:
+                self.worker.pausar()
+            self.btn_ejecutar.setEnabled(False)
+            self.btn_pausar.setEnabled(False)
+            self.lbl_estado_sys.setText("● SIMULACION FINALIZADA")
+            self.lbl_estado_sys.setStyleSheet(
+                f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
+            )
 
     def closeEvent(self, event):
         """Cleanup al cerrar la ventana."""

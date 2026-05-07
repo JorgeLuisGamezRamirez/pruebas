@@ -143,12 +143,9 @@ def obtener_stylesheet() -> str:
     }}
 
     QSpinBox::up-button, QSpinBox::down-button {{
-        background-color: {BG_CARD};
+        width: 0px;
         border: none;
-        width: 20px;
-    }}
-    QSpinBox::up-button:hover, QSpinBox::down-button:hover {{
-        background-color: {BG_HOVER};
+        background: transparent;
     }}
 
     /* ─── ComboBox ─── */

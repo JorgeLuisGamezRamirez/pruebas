@@ -38,6 +38,7 @@ class PCB:
         self.tick_finalizacion = None
         self.tiempo_espera = 0
         self.tiempo_retorno = 0
+        self.quantum_restante = 0
 
     def transicionar(self, nuevo_estado: EstadoProceso):
         """Cambia el estado del proceso de forma segura."""

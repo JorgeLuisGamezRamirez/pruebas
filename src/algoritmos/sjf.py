@@ -6,9 +6,6 @@ class PlanificadorSJF(PlanificadorBase):
     Implementación del algoritmo Shortest Job First (SJF).
     Selecciona el proceso con la ráfaga de CPU restante más corta.
     """
-    def __init__(self):
-        super().__init__()
-
     def agregar_proceso(self, pcb: PCB):
         """Agrega el proceso a la cola de listos."""
         self.cola_listos.append(pcb)

@@ -18,7 +18,11 @@ class WidgetGantt(QWidget):
 
     def set_historial(self, historial: list):
         self.historial = historial
-        self.setMinimumWidth(max(600, len(historial) * 28 + 100))
+        if historial:
+            max_tick = max(t for t, _, _, _ in historial)
+            self.setMinimumWidth(max(600, (max_tick + 1) * 28 + 100))
+        else:
+            self.setMinimumWidth(600)
         self.update()
 
     def _color_para_pid(self, pid: int) -> str:
@@ -41,20 +45,12 @@ class WidgetGantt(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # Recopilar PIDs únicos (con nombre)
-        pids_info = {}
-        for tick, pid, nombre in self.historial:
-            if pid is not None and pid not in pids_info:
-                pids_info[pid] = nombre
-
-        if not pids_info:
+        cpus = sorted({cpu for _, cpu, _, _ in self.historial})
+        if not cpus:
             painter.setPen(QColor(estilos.TEXT_MUTED))
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "CPU inactiva")
             painter.end()
             return
-
-        pids = sorted(pids_info.keys())
-        pid_to_row = {pid: i for i, pid in enumerate(pids)}
 
         # Dimensiones
         margin_left = 80
@@ -62,9 +58,9 @@ class WidgetGantt(QWidget):
         margin_bottom = 40
         row_height = 40
         cell_width = 25
-        total_ticks = len(self.historial)
+        total_ticks = max(t for t, _, _, _ in self.historial) + 1
 
-        chart_height = len(pids) * row_height
+        chart_height = len(cpus) * row_height
         chart_width = total_ticks * cell_width
 
         # Fondo del gráfico
@@ -77,7 +73,7 @@ class WidgetGantt(QWidget):
         pen_grid = QPen(QColor(estilos.BORDER))
         pen_grid.setWidth(1)
         painter.setPen(pen_grid)
-        for i in range(len(pids) + 1):
+        for i in range(len(cpus) + 1):
             y = margin_top + i * row_height
             painter.drawLine(margin_left, int(y), int(margin_left + chart_width), int(y))
 
@@ -86,15 +82,15 @@ class WidgetGantt(QWidget):
             x = margin_left + t * cell_width
             painter.drawLine(int(x), margin_top, int(x), int(margin_top + chart_height))
 
-        # Labels Y (PIDs)
+        # Labels Y (CPUs)
         painter.setFont(QFont(estilos.FONT_MONO, 10, QFont.Weight.Bold))
-        for pid, row in pid_to_row.items():
+        for row, cpu in enumerate(cpus):
             y = margin_top + row * row_height + row_height / 2
-            painter.setPen(QColor(self._color_para_pid(pid)))
+            painter.setPen(QColor(estilos.TEXT_SECONDARY))
             painter.drawText(
                 QRectF(0, y - 10, margin_left - 8, 20),
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
-                f"P{pid}"
+                f"CPU {cpu}"
             )
 
         # Labels X (ticks)
@@ -109,10 +105,10 @@ class WidgetGantt(QWidget):
             )
 
         # Barras de ejecución
-        for tick, pid, nombre in self.historial:
+        for tick, cpu, pid, nombre in self.historial:
             if pid is None:
                 continue
-            row = pid_to_row[pid]
+            row = cpus.index(cpu)
             x = margin_left + tick * cell_width
             y = margin_top + row * row_height + 6
             w = cell_width - 2
@@ -242,7 +238,7 @@ class PanelGantt(QWidget):
                 item.widget().deleteLater()
 
         pids_vistos = {}
-        for _, pid, nombre in historial:
+        for _, _, pid, nombre in historial:
             if pid and pid not in pids_vistos:
                 pids_vistos[pid] = nombre
         for pid, nombre in pids_vistos.items():

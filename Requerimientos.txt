@@ -1,0 +1,2 @@
+# Dependencias del simulador
+PyQt6>=6.5

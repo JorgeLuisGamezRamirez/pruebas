@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QStackedWidget, QTabWidget, QPushButton, QFrame, QProgressBar
+    QStackedWidget, QTabWidget, QPushButton, QFrame
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -52,9 +52,10 @@ class VentanaPrincipal(QMainWindow):
         mem = params['memoria_mb']
         algoritmo_idx = params['algoritmo']
         quantum = params['quantum']
+        nucleos = params.get('nucleos', params.get('nucleos_cpu', 1))
 
         planificador = self._crear_planificador(algoritmo_idx, quantum)
-        recursos = GestorRecursos(total_cpu=1, total_ram_mb=mem)
+        recursos = GestorRecursos(total_cpu=nucleos, total_ram_mb=mem)
         self.simulador = Simulador(planificador, recursos)
 
         # Crear procesos iniciales si se pidió
@@ -280,7 +281,7 @@ class VentanaPrincipal(QMainWindow):
                 self.worker.pausar()
             self.btn_ejecutar.setEnabled(False)
             self.btn_pausar.setEnabled(False)
-            self.lbl_estado_sys.setText("● SIMULACION FINALIZADA")
+            self.lbl_estado_sys.setText("● SIMULACIÓN FINALIZADA")
             self.lbl_estado_sys.setStyleSheet(
                 f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
             )

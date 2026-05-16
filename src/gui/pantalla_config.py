@@ -16,9 +16,49 @@ class PantallaConfig(QWidget):
 
     def _construir_ui(self):
         layout_ext = QVBoxLayout(self)
+        layout_ext.setContentsMargins(30, 20, 30, 20)
         layout_ext.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.setStyleSheet(f"""
+            QFrame#panel_main {{
+                background-color: {estilos.BG_DARK};
+                border: 1px solid {estilos.BORDER};
+                border-radius: 10px;
+            }}
+            QFrame#panel_header {{
+                background-color: {estilos.BG_CARD_ALT};
+                border: 1px solid {estilos.BORDER};
+                border-radius: 8px;
+            }}
+            QLabel#panel_header_title {{
+                font-size: 13px;
+                font-weight: bold;
+            }}
+            QLabel#panel_header_subtitle {{
+                font-size: 12px;
+                color: {estilos.TEXT_SECONDARY};
+            }}
+            QFrame#panel_bar {{
+                background-color: {estilos.BG_CARD};
+                border: 1px solid {estilos.BORDER};
+                border-radius: 6px;
+            }}
+            QFrame#panel_body {{
+                background-color: {estilos.BG_CARD_ALT};
+                border: 1px solid {estilos.BORDER};
+                border-radius: 8px;
+            }}
+            QFrame#panel_section {{
+                background-color: {estilos.BG_DARK};
+                border: 1px solid {estilos.BORDER};
+                border-radius: 8px;
+            }}
+            QLabel#panel_title {{
+                color: {estilos.SUCCESS};
+                font-size: 11px;
+                font-weight: bold;
+            }}
+            QComboBox, QSpinBox {{
                 border: 1px solid {estilos.BORDER_LIGHT};
                 border-radius: 6px;
                 padding: 6px 10px;
@@ -30,21 +70,6 @@ class PantallaConfig(QWidget):
             QComboBox::drop-down {{
                 border: none;
                 width: 28px;
-            }}
-            QCheckBox {{
-                color: {estilos.TEXT_PRIMARY};
-                spacing: 8px;
-            }}
-            QCheckBox::indicator {{
-                width: 18px;
-                height: 18px;
-                border-radius: 4px;
-                border: 1px solid {estilos.BORDER_LIGHT};
-                background: {estilos.BG_INPUT};
-            }}
-            QCheckBox::indicator:checked {{
-                background-color: {estilos.PRIMARY};
-                border-color: {estilos.PRIMARY};
             }}
             QPushButton#btn_iniciar {{
                 background-color: {estilos.PRIMARY};
@@ -60,43 +85,62 @@ class PantallaConfig(QWidget):
             }}
         """)
 
-        card = QFrame()
-        card.setObjectName("config_card")
-        card.setFixedWidth(720)
-        card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(32, 28, 32, 28)
-        card_layout.setSpacing(20)
+        panel_main = QFrame()
+        panel_main.setObjectName("panel_main")
+        panel_main.setFixedWidth(780)
+        panel_layout = QVBoxLayout(panel_main)
+        panel_layout.setContentsMargins(18, 16, 18, 16)
+        panel_layout.setSpacing(12)
 
-        titulo = QLabel("Configuracion del Entorno")
-        titulo.setObjectName("titulo_principal")
-        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        card_layout.addWidget(titulo)
+        header_title = QFrame()
+        header_title.setObjectName("panel_header")
+        header_title_layout = QHBoxLayout(header_title)
+        header_title_layout.setContentsMargins(14, 8, 14, 8)
+        lbl_titulo = QLabel("Configuracion del Entorno")
+        lbl_titulo.setObjectName("panel_header_title")
+        lbl_titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_title_layout.addWidget(lbl_titulo)
+        panel_layout.addWidget(header_title)
 
-        subtitulo = QLabel("Ajusta los recursos y el planificador antes de iniciar la simulacion")
-        subtitulo.setObjectName("subtitulo")
-        subtitulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        card_layout.addWidget(subtitulo)
+        header_sub = QFrame()
+        header_sub.setObjectName("panel_header")
+        header_sub_layout = QHBoxLayout(header_sub)
+        header_sub_layout.setContentsMargins(14, 8, 14, 8)
+        lbl_sub = QLabel("Ajusta los recursos y el planificador antes de iniciar la simulacion")
+        lbl_sub.setObjectName("panel_header_subtitle")
+        lbl_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_sub_layout.addWidget(lbl_sub)
+        panel_layout.addWidget(header_sub)
 
-        separador = QFrame()
-        separador.setFixedHeight(1)
-        separador.setStyleSheet(f"background-color: {estilos.BORDER};")
-        card_layout.addWidget(separador)
+        barra = QFrame()
+        barra.setObjectName("panel_bar")
+        barra.setFixedHeight(22)
+        panel_layout.addWidget(barra)
 
-        panel_der = QFrame()
-        grid = QGridLayout(panel_der)
-        grid.setSpacing(20)
+        panel_body = QFrame()
+        panel_body.setObjectName("panel_body")
+        grid = QGridLayout(panel_body)
+        grid.setContentsMargins(12, 12, 12, 12)
+        grid.setSpacing(12)
         grid.setColumnStretch(0, 1)
-        grid.setColumnStretch(1, 2)
-        grid.setColumnStretch(2, 2)
+        grid.setColumnStretch(1, 1)
+        grid.setColumnStretch(2, 1)
+
+        panel_layout.addWidget(panel_body)
+
+        def _crear_seccion(titulo: str):
+            frame = QFrame()
+            frame.setObjectName("panel_section")
+            layout = QVBoxLayout(frame)
+            layout.setContentsMargins(12, 10, 12, 10)
+            layout.setSpacing(8)
+            lbl = QLabel(titulo)
+            lbl.setObjectName("panel_title")
+            layout.addWidget(lbl)
+            return frame, layout
 
         # Fila 0 - Recursos
-        layout_recursos = QVBoxLayout()
-        layout_recursos.setSpacing(8)
-        lbl_recursos = QLabel("RECURSOS")
-        lbl_recursos.setStyleSheet(
-            f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
-        )
-        layout_recursos.addWidget(lbl_recursos)
+        panel_recursos, layout_recursos = _crear_seccion("RECURSOS")
 
         ram_row = QHBoxLayout()
         lbl_ram = QLabel("RAM (MB):")
@@ -116,16 +160,10 @@ class PantallaConfig(QWidget):
         ram_row.addWidget(self.spin_ram)
         layout_recursos.addLayout(ram_row)
 
-        grid.addLayout(layout_recursos, 0, 0, 1, 2)
+        grid.addWidget(panel_recursos, 0, 0, 1, 2)
 
         # Fila 0 - Algoritmo
-        layout_algo = QVBoxLayout()
-        layout_algo.setSpacing(8)
-        lbl_plan = QLabel("ALGORITMO DE PLANIFICACION")
-        lbl_plan.setStyleSheet(
-            f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
-        )
-        layout_algo.addWidget(lbl_plan)
+        panel_algo, layout_algo = _crear_seccion("ALGORITMO DE PLANIFICACION")
 
         self.combo_algoritmo = QComboBox()
         self.combo_algoritmo.setMinimumWidth(200)
@@ -137,16 +175,10 @@ class PantallaConfig(QWidget):
         ])
         self.combo_algoritmo.currentIndexChanged.connect(self._on_algoritmo_cambio)
         layout_algo.addWidget(self.combo_algoritmo)
-        grid.addLayout(layout_algo, 0, 2)
+        grid.addWidget(panel_algo, 0, 2)
 
         # Fila 1 - Carga inicial
-        layout_carga = QVBoxLayout()
-        layout_carga.setSpacing(8)
-        lbl_carga = QLabel("CARGA INICIAL")
-        lbl_carga.setStyleSheet(
-            f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
-        )
-        layout_carga.addWidget(lbl_carga)
+        panel_carga, layout_carga = _crear_seccion("CARGA INICIAL")
 
         lbl_proc = QLabel("Procesos iniciales:")
         self.spin_procesos = QSpinBox()
@@ -165,16 +197,10 @@ class PantallaConfig(QWidget):
         layout_carga.addWidget(self.spin_nucleos)
         layout_carga.addStretch()
 
-        grid.addLayout(layout_carga, 1, 0)
+        grid.addWidget(panel_carga, 1, 0)
 
         # Fila 1 - Resumen
-        layout_resumen = QVBoxLayout()
-        layout_resumen.setSpacing(8)
-        resumen_titulo = QLabel("RESUMEN DE SIMULACION")
-        resumen_titulo.setStyleSheet(
-            f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
-        )
-        layout_resumen.addWidget(resumen_titulo)
+        panel_resumen, layout_resumen = _crear_seccion("RESUMEN DE SIMULACION")
 
         self.lbl_resumen = QLabel("")
         self.lbl_resumen.setWordWrap(True)
@@ -182,16 +208,10 @@ class PantallaConfig(QWidget):
             f"color: {estilos.TEXT_SECONDARY}; padding: 6px;"
         )
         layout_resumen.addWidget(self.lbl_resumen)
-        grid.addLayout(layout_resumen, 1, 1)
+        grid.addWidget(panel_resumen, 1, 1)
 
         # Fila 1 - Detalle
-        layout_detalle = QVBoxLayout()
-        layout_detalle.setSpacing(8)
-        lbl_desc = QLabel("DETALLE DEL ALGORITMO")
-        lbl_desc.setStyleSheet(
-            f"color: {estilos.SUCCESS}; font-size: 12px; font-weight: bold;"
-        )
-        layout_detalle.addWidget(lbl_desc)
+        panel_detalle, layout_detalle = _crear_seccion("DETALLE DEL ALGORITMO")
 
         self.contenedor_quantum = QWidget()
         quantum_layout = QHBoxLayout(self.contenedor_quantum)
@@ -210,9 +230,7 @@ class PantallaConfig(QWidget):
         self.lbl_desc_algo.setStyleSheet(f"color: {estilos.TEXT_SECONDARY};")
         layout_detalle.addWidget(self.lbl_desc_algo)
 
-        grid.addLayout(layout_detalle, 1, 2)
-
-        card_layout.addWidget(panel_der)
+        grid.addWidget(panel_detalle, 1, 2)
 
         acciones = QHBoxLayout()
         self.btn_cerrar = QPushButton("Cerrar")
@@ -233,9 +251,9 @@ class PantallaConfig(QWidget):
         self.btn_siguiente.clicked.connect(self._on_iniciar)
         acciones.addWidget(self.btn_siguiente)
 
-        card_layout.addLayout(acciones)
+        panel_layout.addLayout(acciones)
 
-        layout_ext.addWidget(card)
+        layout_ext.addWidget(panel_main)
 
         self.slider_ram.valueChanged.connect(self._on_ram_slider_cambio)
         self.spin_ram.valueChanged.connect(self._on_ram_spin_cambio)

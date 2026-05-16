@@ -6,9 +6,6 @@ class PlanificadorPrioridades(PlanificadorBase):
     Implementación de Planificación por Prioridades.
     Selecciona el proceso con el valor numérico de prioridad más bajo.
     """
-    def __init__(self):
-        super().__init__()
-
     def agregar_proceso(self, pcb: PCB):
         """Agrega el proceso a la cola de listos."""
         self.cola_listos.append(pcb)

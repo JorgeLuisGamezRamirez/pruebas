@@ -315,7 +315,6 @@ def obtener_stylesheet() -> str:
         border-radius: 4px;
         height: 8px;
         text-align: center;
-        font-size: 0px;
     }}
     QProgressBar::chunk {{
         background-color: {PRIMARY};

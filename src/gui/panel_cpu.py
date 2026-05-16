@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea, QGridLayout
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -23,56 +23,22 @@ class PanelCPU(QWidget):
         self.col_listos = self._crear_columna_cola("● COLA DE LISTOS", estilos.ESTADO_LISTO)
         layout_principal.addWidget(self.col_listos, 2)
 
-        # ─── Centro: CPU ───
+        # ─── Centro: CPUs ───
         centro = QVBoxLayout()
         centro.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Flecha izquierda
-        lbl_flecha = QLabel("►")
-        lbl_flecha.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl_flecha.setStyleSheet(f"color: {estilos.TEXT_MUTED}; font-size: 24px;")
+        scroll_cpus = QScrollArea()
+        scroll_cpus.setWidgetResizable(True)
+        scroll_cpus.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        scroll_content = QWidget()
+        scroll_content.setObjectName("scroll_cpus_inner")
+        scroll_content.setStyleSheet("QWidget#scroll_cpus_inner { background: transparent; }")
+        self.layout_cpus = QGridLayout(scroll_content)
+        self.layout_cpus.setContentsMargins(0, 0, 0, 0)
+        self.layout_cpus.setSpacing(12)
+        scroll_cpus.setWidget(scroll_content)
 
-        self.card_cpu = QFrame()
-        self.card_cpu.setObjectName("card")
-        self.card_cpu.setFixedSize(280, 220)
-        self.card_cpu.setStyleSheet(f"""
-            QFrame#card {{
-                background-color: {estilos.BG_CARD};
-                border: 2px solid {estilos.BORDER};
-                border-radius: 14px;
-            }}
-        """)
-        cpu_layout = QVBoxLayout(self.card_cpu)
-        cpu_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        cpu_layout.setSpacing(8)
-
-        self.lbl_cpu_estado = QLabel("● INACTIVA")
-        self.lbl_cpu_estado.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_cpu_estado.setStyleSheet(f"color: {estilos.TEXT_MUTED}; font-size: 12px; font-weight: bold;")
-        cpu_layout.addWidget(self.lbl_cpu_estado)
-
-        self.lbl_cpu_pid = QLabel("—")
-        self.lbl_cpu_pid.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_cpu_pid.setFont(QFont(estilos.FONT_MONO, 32, QFont.Weight.Bold))
-        self.lbl_cpu_pid.setStyleSheet(f"color: {estilos.PRIMARY_LIGHT};")
-        cpu_layout.addWidget(self.lbl_cpu_pid)
-
-        self.lbl_cpu_nombre = QLabel("")
-        self.lbl_cpu_nombre.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_cpu_nombre.setStyleSheet(f"color: {estilos.TEXT_SECONDARY}; font-size: 12px;")
-        cpu_layout.addWidget(self.lbl_cpu_nombre)
-
-        self.lbl_cpu_rafaga = QLabel("")
-        self.lbl_cpu_rafaga.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_cpu_rafaga.setStyleSheet(
-            f"color: {estilos.SECONDARY}; font-family: {estilos.FONT_MONO}; font-size: 13px;"
-        )
-        cpu_layout.addWidget(self.lbl_cpu_rafaga)
-
-        centro.addStretch()
-        centro.addWidget(self.card_cpu)
-        centro.addStretch()
-
+        centro.addWidget(scroll_cpus)
         layout_principal.addLayout(centro, 3)
 
         # ─── Columna derecha: Terminados ───
@@ -150,40 +116,90 @@ class PanelCPU(QWidget):
 
         return item
 
+    def _crear_card_cpu(self, proceso=None) -> QFrame:
+        card = QFrame()
+        card.setObjectName("card_cpu")
+        card.setStyleSheet(f"""
+            QFrame#card_cpu {{
+                background-color: {estilos.BG_CARD};
+                border: 2px solid {estilos.BORDER};
+                border-radius: 14px;
+            }}
+        """)
+        card_layout = QVBoxLayout(card)
+        card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.setSpacing(6)
+
+        if proceso is None:
+            lbl_estado = QLabel("● INACTIVA")
+            lbl_estado.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_estado.setStyleSheet(f"color: {estilos.TEXT_MUTED}; font-size: 12px; font-weight: bold;")
+            card_layout.addWidget(lbl_estado)
+
+            lbl_pid = QLabel("CPU LIBRE")
+            lbl_pid.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_pid.setFont(QFont(estilos.FONT_MONO, 18, QFont.Weight.Bold))
+            lbl_pid.setStyleSheet(f"color: {estilos.TEXT_SECONDARY};")
+            card_layout.addWidget(lbl_pid)
+            return card
+
+        lbl_estado = QLabel("● EJECUTANDO")
+        lbl_estado.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_estado.setStyleSheet(
+            f"color: {estilos.ESTADO_EJECUTANDO}; font-size: 12px; font-weight: bold;"
+        )
+        card_layout.addWidget(lbl_estado)
+
+        lbl_pid = QLabel(f"P{proceso.pid}")
+        lbl_pid.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_pid.setFont(QFont(estilos.FONT_MONO, 28, QFont.Weight.Bold))
+        lbl_pid.setStyleSheet(f"color: {estilos.PRIMARY_LIGHT};")
+        card_layout.addWidget(lbl_pid)
+
+        lbl_nombre = QLabel(proceso.nombre)
+        lbl_nombre.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_nombre.setStyleSheet(f"color: {estilos.TEXT_SECONDARY}; font-size: 12px;")
+        card_layout.addWidget(lbl_nombre)
+
+        pct = int((1 - proceso.rafaga_restante / max(proceso.rafaga_cpu_total, 1)) * 100)
+        lbl_rafaga = QLabel(f"Rafaga: {proceso.rafaga_restante}t ({pct}%)")
+        lbl_rafaga.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_rafaga.setStyleSheet(
+            f"color: {estilos.ESTADO_EJECUTANDO}; font-family: {estilos.FONT_MONO}; font-size: 12px;"
+        )
+        card_layout.addWidget(lbl_rafaga)
+
+        card.setStyleSheet(f"""
+            QFrame#card_cpu {{
+                background-color: {estilos.BG_CARD};
+                border: 2px solid {estilos.ESTADO_EJECUTANDO};
+                border-radius: 14px;
+            }}
+        """)
+        return card
+
+    def _limpiar_layout(self, layout: QGridLayout):
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
     def actualizar(self, estado: dict):
         """Actualiza la visualización con el estado recibido."""
-        proceso_cpu = estado.get('proceso_en_cpu')
+        procesos_cpu = estado.get('procesos_en_cpu', [])
         cola_listos = estado.get('cola_listos', [])
         terminados = estado.get('terminados', [])
 
-        # --- Actualizar CPU ---
-        if proceso_cpu:
-            self.card_cpu.setStyleSheet(f"""
-                QFrame#card {{
-                    background-color: {estilos.BG_CARD};
-                    border: 2px solid {estilos.ESTADO_EJECUTANDO};
-                    border-radius: 14px;
-                }}
-            """)
-            self.lbl_cpu_estado.setText("● EJECUTANDO")
-            self.lbl_cpu_estado.setStyleSheet(f"color: {estilos.ESTADO_EJECUTANDO}; font-size: 12px; font-weight: bold;")
-            self.lbl_cpu_pid.setText(f"P{proceso_cpu.pid}")
-            self.lbl_cpu_nombre.setText(proceso_cpu.nombre)
-            pct = int((1 - proceso_cpu.rafaga_restante / max(proceso_cpu.rafaga_cpu_total, 1)) * 100)
-            self.lbl_cpu_rafaga.setText(f"Ráfaga: {proceso_cpu.rafaga_restante}t restante ({pct}%)")
+        # --- Actualizar CPUs ---
+        self._limpiar_layout(self.layout_cpus)
+        if not procesos_cpu:
+            self.layout_cpus.addWidget(self._crear_card_cpu(), 0, 0)
         else:
-            self.card_cpu.setStyleSheet(f"""
-                QFrame#card {{
-                    background-color: {estilos.BG_CARD};
-                    border: 2px dashed {estilos.BORDER};
-                    border-radius: 14px;
-                }}
-            """)
-            self.lbl_cpu_estado.setText("● INACTIVA")
-            self.lbl_cpu_estado.setStyleSheet(f"color: {estilos.TEXT_MUTED}; font-size: 12px; font-weight: bold;")
-            self.lbl_cpu_pid.setText("—")
-            self.lbl_cpu_nombre.setText("")
-            self.lbl_cpu_rafaga.setText("")
+            cols = 2
+            for idx, proc in enumerate(procesos_cpu):
+                row = idx // cols
+                col = idx % cols
+                self.layout_cpus.addWidget(self._crear_card_cpu(proc), row, col)
 
         # --- Actualizar Cola Listos ---
         self._llenar_cola(self.col_listos, cola_listos, estilos.ESTADO_LISTO)

@@ -20,42 +20,45 @@ class WorkerIPC(QThread):
         self.capacidad = capacidad
         self.n_items = n_items
         self.corriendo = True
+        self._bufer = []
+        self._mutex = threading.Lock()
+        self._huecos = threading.Semaphore(self.capacidad)
+        self._llenos = threading.Semaphore(0)
 
     def run(self):
-        bufer = []
-        mutex = threading.Lock()
-        huecos = threading.Semaphore(self.capacidad)
-        llenos = threading.Semaphore(0)
-
         def producir():
             for i in range(1, self.n_items + 1):
                 if not self.corriendo:
                     return
-                huecos.acquire()
-                mutex.acquire()
+                self._huecos.acquire()
+                self._mutex.acquire()
                 item = f"D-{i}"
-                bufer.append(item)
+                self._bufer.append(item)
                 self.senal_evento.emit(
                     f"[Productor] Produjo: {item}",
-                    list(bufer)
+                    list(self._bufer)
                 )
-                mutex.release()
-                llenos.release()
+                self._mutex.release()
+                self._llenos.release()
                 time.sleep(random.uniform(0.4, 1.0))
 
         def consumir():
             for _ in range(self.n_items):
                 if not self.corriendo:
                     return
-                llenos.acquire()
-                mutex.acquire()
-                item = bufer.pop(0)
+                self._llenos.acquire()
+                self._mutex.acquire()
+                if not self._bufer:
+                    self._mutex.release()
+                    self._huecos.release()
+                    continue
+                item = self._bufer.pop(0)
                 self.senal_evento.emit(
                     f"[Consumidor] Consumió: {item}",
-                    list(bufer)
+                    list(self._bufer)
                 )
-                mutex.release()
-                huecos.release()
+                self._mutex.release()
+                self._huecos.release()
                 time.sleep(random.uniform(0.6, 1.5))
 
         hilo_p = threading.Thread(target=producir)
@@ -69,6 +72,10 @@ class WorkerIPC(QThread):
 
     def detener(self):
         self.corriendo = False
+        for _ in range(self.capacidad):
+            self._huecos.release()
+        for _ in range(self.n_items):
+            self._llenos.release()
 
 
 class PanelIPC(QWidget):
